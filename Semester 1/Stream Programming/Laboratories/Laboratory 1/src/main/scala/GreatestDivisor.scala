@@ -2,15 +2,17 @@ import scala.math.sqrt
 import scala.util.control.Breaks
 
 object GreatestDivisor {
-  def main(args: Array[String]){
-   try{
-     args.foreach(arg => println(secondGreatestDivisorSlightlyFaster(arg.toInt)))
-   }catch{
-     case exception: NumberFormatException =>
-       println("Conversion not possible")
-   }
-  }
+  def main(args: Array[String]) {
 
+    args.foreach(arg =>
+      try {
+        println(secondGreatestDivisorSlightlyFaster(arg.toInt))
+      } catch {
+        case exception: NumberFormatException =>
+          println("Conversion not possible")
+      }
+    )
+  }
   // greatest divisor of a number is the number itself
   def getDivisor(x: Int): Int = x
 
