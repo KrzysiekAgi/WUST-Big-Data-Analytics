@@ -30,3 +30,7 @@ solve(A)
 
 # Exercise 3
 qr(A)$rank
+
+A<-matrix(c(3,0,2,2,0,-2,0,1,1),3,3,TRUE)
+b<-A[1,]
+b
