@@ -20,9 +20,12 @@ Big Data Analytics
 └───Semester 1
 │   │
 │   └───Advanced Topics in Algebra
-│       │   lec1.pdf
-│       │   lec2.pdf
-│       │   ...
+│       │   
+│       └───Laboratories
+│       │   
+│       └───Lectures
+│       │   
+│       └───Classes (not always)
 │   │
 │   └───Elements of Probability
 │   │
