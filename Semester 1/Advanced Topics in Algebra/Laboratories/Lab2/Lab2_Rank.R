@@ -19,7 +19,7 @@ rank <- function(A){
   #indexOfRow - j
   for(indexOfColumn in 1:(ncol(A)-1)){
     if(A[indexOfColumn,indexOfColumn]!=0){
-      A<-rowDivide(A,indexOfColumn,A[indexOfColumn,indexOfColumn]) # TODO: fix case: divide by 0
+      A<-rowDivide(A,indexOfColumn,A[indexOfColumn,indexOfColumn]) 
       if (indexOfColumn != ncol(A)){
         for (indexOfRow in (indexOfColumn+1):nrow(A)){
           A<-rowSubstract(A, indexOfRow, indexOfColumn, A[indexOfRow,indexOfColumn])
