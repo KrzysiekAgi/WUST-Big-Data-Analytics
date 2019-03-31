@@ -21,16 +21,20 @@ dens01$X <- NULL
 dens02$X <- NULL
 dens05$X <- NULL
 
+densFull <- data.frame(dens01$steps, dens01$coefficient, dens02$coefficient, dens05$coefficient)
+densFull
 
-p <- ggplot() +
-  geom_point(data = dens05, aes(x=steps, y=coefficient), color = "blue") +
-  geom_point(data = dens01, aes(x=steps, y=coefficient), color = "red") +
-  geom_point(data = dens02, aes(x=steps, y=coefficient), color = "green") +
+
+
+pl <- ggplot() + 
+  geom_point(data = densFull, aes(x=dens01.steps, y=dens01.coefficient, shape = "1")) +
+  geom_point(data = densFull, aes(x=dens01.steps, y=dens02.coefficient, shape="2")) +
+  geom_point(data = densFull, aes(x=dens01.steps, y=dens05.coefficient, shape="3")) +
   xlim(2,50) +
   ylim(0,0.3) +
   labs(x = "Liczba kroków", y = "Wspólczynnik", title = "2D diffusion") +
-  legend()
+  #scale_colour_manual(values=c("red", "blue", "green"), labels=c("0.1","0.2","0.5")) +
+  scale_shape_manual(values = c(1,2,6), labels=c("0.1","0.2","0.5"), name = "Wartosc gestosci") +
   theme_bw()
 
-p
-  
+pl
