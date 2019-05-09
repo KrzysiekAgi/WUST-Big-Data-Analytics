@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define LATTICE_SIZE 100
-#define TEMP_POINTS 1
+#define LATTICE_SIZE 10
+#define TEMP_POINTS 18
 
 // Measurements
 double E[TEMP_POINTS] = {0};
@@ -26,13 +26,8 @@ int mod(int a, int b){
 }
 
 void mcStep(double arr[LATTICE_SIZE][LATTICE_SIZE], double beta){
-    //std::mt19937 generator (123);
-    //std::uniform_real_distribution<double> dis(0.0, 1.0);
-    //std::uniform_real_distribution<double> indexed(0.0,LATTICE_SIZE);
         for(int i=0; i<LATTICE_SIZE; i++){
             for(int ii=0; ii<LATTICE_SIZE; ii++){
-                //int a = int(indexed(generator));
-                //int b = int(indexed(generator));
                 int a = rand() % LATTICE_SIZE;
                 int b = rand() % LATTICE_SIZE;
                 double s = arr[a][b];
@@ -103,23 +98,23 @@ double calculateMagnetisation(double arr[LATTICE_SIZE][LATTICE_SIZE]){
 void writeToFile(){
     // Prepare files for writing
     std::fstream energy;
-    energy.open("energy100.txt");
+    energy.open("energy10.txt");
     std::fstream magnetisation;
-    magnetisation.open("mag_tight100.txt");
+    magnetisation.open("magnetisation10.txt");
     std::fstream capacity;
-    capacity.open("capacity100.txt");
+    capacity.open("capacity10.txt");
     std::fstream sus;
-    sus.open("sus_tight100.txt");
+    sus.open("sus10.txt");
     std::fstream binder;
-    binder.open("binder100.txt");
+    binder.open("binder10.txt");
 
     // Write
     for(int i=0; i<TEMP_POINTS; i++){
-        //energy << E[i] << ",";
+        energy << E[i] << ",";
         magnetisation << M[i] << ",";
-        //capacity << C[i] << ",";
+        capacity << C[i] << ",";
         sus << X[i] << ",";
-       // binder << U[i] << ",";
+        binder << U[i] << ",";
     }
 
     // Close files
@@ -165,7 +160,7 @@ void testModel(double lattice[LATTICE_SIZE][LATTICE_SIZE]){
 
     // Prepare helper variables
     double ene =0, mag=0, E1=0, E2=0, M1=0, M2=0, M4=0, n1=0, n2=0, n4=0, iT=0, iT2=0;
-    n1 = 1/((MONTE_CARLO_STEPS/1000) * LATTICE_SIZE * LATTICE_SIZE);
+    n1 = 1/((MONTE_CARLO_STEPS/1000) * LATTICE_SIZE * LATTICE_SIZE );
     n2 = 1/((MONTE_CARLO_STEPS/1000) * (MONTE_CARLO_STEPS/1000) * LATTICE_SIZE * LATTICE_SIZE);
     n4 = 1/(MONTE_CARLO_STEPS/1000);
 
@@ -174,7 +169,6 @@ void testModel(double lattice[LATTICE_SIZE][LATTICE_SIZE]){
         E1=0;E2=0;M1=0;M2=0;M4=0;
 
         iT = 1/T[point];
-        //iT = 1/2.6;
         iT2 = iT*iT;
 
         // Omit steps
@@ -191,16 +185,16 @@ void testModel(double lattice[LATTICE_SIZE][LATTICE_SIZE]){
 
                 E1 += ene;
                 E2 += ene*ene;
-                M1 += mag;
-                M2 += mag*mag;
-                M4 += mag*mag*mag*mag;
+                M1 += abs(mag/(LATTICE_SIZE*LATTICE_SIZE));
+                M2 += mag*mag/(LATTICE_SIZE*LATTICE_SIZE);
+                M4 += mag*mag*mag*mag/(LATTICE_SIZE*LATTICE_SIZE);
             }
         }
 
         E[point] = n1 * E1;
-        M[point] = abs(n1 * M1);
+        M[point] = M1/(MONTE_CARLO_STEPS/1000);
         C[point] = (n1*E2 - n2*E1*E1)*iT2;
-        X[point] = (n1*M2 - n2*M1*M1)*iT;
+        X[point] = (M2/(MONTE_CARLO_STEPS/1000) - M1*M1/(MONTE_CARLO_STEPS/1000)*(MONTE_CARLO_STEPS/1000))*iT;
         U[point] = 1 - n4*M4/(3*M2*M2*n4*n4);
         std::cout<<"Temp point: "<<point<<std::endl;
     }
@@ -208,8 +202,6 @@ void testModel(double lattice[LATTICE_SIZE][LATTICE_SIZE]){
     writeToFile();
 }
 
-//TODO Finite size scaling
-//TODO plot behaviour
 int main(){
 
     srand(time(NULL));
@@ -226,13 +218,6 @@ int main(){
         }
     }
 
-    printLattice(lattice);
-    std::cout<<std::endl<<std::endl;
-
-    printLatticeForBehaviourPlot(lattice);
-
-    //double T_star = 1/1;
-    //double T_star = 1/2.26;
     double T_star = 1/5;
 
     for(int i=0; i<1050; i++) {
@@ -241,13 +226,8 @@ int main(){
         if(i==1 || i==4 || i==32 || i==128 || i==1024) printLatticeForBehaviourPlot(lattice);
     }
 
-    printLattice(lattice);
-    std::cout<<std::endl<<std::endl;
+    countSpins(lattice);
 
-
-
-    //countSpins(lattice);
-
-    //testModel(lattice);
+    testModel(lattice);
 
 }
