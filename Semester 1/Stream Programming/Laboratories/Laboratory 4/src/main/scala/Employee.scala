@@ -1,0 +1,3 @@
+class Employee (name: String) {
+
+}
