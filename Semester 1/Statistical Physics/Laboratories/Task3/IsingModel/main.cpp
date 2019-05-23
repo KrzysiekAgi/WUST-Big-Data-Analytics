@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define LATTICE_SIZE 10
-#define TEMP_POINTS 18
+#define LATTICE_SIZE 100
+#define TEMP_POINTS 34
 
 // Measurements
 double E[TEMP_POINTS] = {0};
@@ -18,7 +18,8 @@ double U[TEMP_POINTS] = {0};
 
 //Steps
 double OMITTED_STEPS = 30000;
-double MONTE_CARLO_STEPS = 200000;
+int MONTE_CARLO_STEPS = 200000;
+int factor = 100;
 
 int mod(int a, int b){
     if(a%b>=0) return a%b;
@@ -82,10 +83,37 @@ double calculateEnergy(double arr[LATTICE_SIZE][LATTICE_SIZE]){
             energy += -s*nb;
         }
     }
-    return energy/2;
+    //Two pairs and size
+    return energy/(2*((LATTICE_SIZE*LATTICE_SIZE)));
 }
 
 double calculateMagnetisation(double arr[LATTICE_SIZE][LATTICE_SIZE]){
+    //average spin
+    double sum=0;
+    for(int i=0; i<LATTICE_SIZE; i++){
+        for(int ii=0; ii<LATTICE_SIZE; ii++){
+            sum += arr[i][ii];
+        }
+    }
+    return sum/(LATTICE_SIZE*LATTICE_SIZE);
+}
+
+// @param temperature is actually 1/T*
+double calculateSusceptibility(double power2Magnetisation, double meanMagnetisation, double temperature){
+    return ((LATTICE_SIZE*LATTICE_SIZE)*temperature)*(power2Magnetisation-meanMagnetisation*meanMagnetisation);
+}
+
+// @param temperature is actually 1/T*
+double calculateSpecificHeat(double power2Energy, double meanEnergy, double temperature){
+    return (LATTICE_SIZE*LATTICE_SIZE)/(temperature*temperature)*(power2Energy-meanEnergy*meanEnergy);
+}
+
+double calculateBindersCumulant(double power4Spins, double power2Spins) {
+    return 1 - (power4Spins/(3*power2Spins*power2Spins));
+}
+
+// Calculate M (big M) for Binders Cumulant
+double sumSpins(double arr[LATTICE_SIZE][LATTICE_SIZE]){
     double sum=0;
     for(int i=0; i<LATTICE_SIZE; i++){
         for(int ii=0; ii<LATTICE_SIZE; ii++){
@@ -98,15 +126,15 @@ double calculateMagnetisation(double arr[LATTICE_SIZE][LATTICE_SIZE]){
 void writeToFile(){
     // Prepare files for writing
     std::fstream energy;
-    energy.open("energy10.txt");
+    energy.open("energy100.txt");
     std::fstream magnetisation;
-    magnetisation.open("magnetisation10.txt");
+    magnetisation.open("magnetisation100.txt");
     std::fstream capacity;
-    capacity.open("capacity10.txt");
+    capacity.open("capacity100.txt");
     std::fstream sus;
-    sus.open("sus10.txt");
+    sus.open("sus100.txt");
     std::fstream binder;
-    binder.open("binder10.txt");
+    binder.open("binder100.txt");
 
     // Write
     for(int i=0; i<TEMP_POINTS; i++){
@@ -153,23 +181,30 @@ void countSpins(double arr[LATTICE_SIZE][LATTICE_SIZE]){
 
 void testModel(double lattice[LATTICE_SIZE][LATTICE_SIZE]){
     // Prepare time series
-    double T[TEMP_POINTS];
-    for(int i=0; i<TEMP_POINTS; i++){
-        T[i] = 2 + i*0.05;
-    }
+    double T[TEMP_POINTS] = {1.2,1.35, 1.5, 1.65, 1.79, 1.94, 2., 2.03571429, 2.07142857, 2.10714286, 2.14285714,
+                       2.17857143, 2.21428571, 2.25, 2.269, 2.28571429, 2.32142857, 2.35714286, 2.39285714,
+                       2.42857143, 2.46428571, 2.5, 2.55, 2.67, 2.78, 2.89, 3., 3.12, 3.26, 3.41, 3.55, 3.7, 3.85, 4.};
 
     // Prepare helper variables
-    double ene =0, mag=0, E1=0, E2=0, M1=0, M2=0, M4=0, n1=0, n2=0, n4=0, iT=0, iT2=0;
-    n1 = 1/((MONTE_CARLO_STEPS/1000) * LATTICE_SIZE * LATTICE_SIZE );
-    n2 = 1/((MONTE_CARLO_STEPS/1000) * (MONTE_CARLO_STEPS/1000) * LATTICE_SIZE * LATTICE_SIZE);
-    n4 = 1/(MONTE_CARLO_STEPS/1000);
+    double iT=0, mag=0, ene=0, sp=0;
+    double meanEnergy=0, meanMagnetisation=0, susceptibility=0, specificHeat=0, bindersCumulant=0;
+    double power2Energy=0, power2Magnetisation=0, power2Spins=0, power4Spins=0;
+
+    const clock_t begin_time = clock();
 
     // Start model
     for(int point=0; point<TEMP_POINTS; point++){
-        E1=0;E2=0;M1=0;M2=0;M4=0;
+        meanMagnetisation = 0;
+        meanEnergy = 0;
+        power2Energy = 0;
+        power2Magnetisation = 0;
+        power2Spins=0;
+        power4Spins=0;
+        susceptibility=0;
+        specificHeat=0;
+        bindersCumulant=0;
 
         iT = 1/T[point];
-        iT2 = iT*iT;
 
         // Omit steps
         for(int i=0; i<OMITTED_STEPS; i++) mcStep(lattice, iT);
@@ -179,55 +214,72 @@ void testModel(double lattice[LATTICE_SIZE][LATTICE_SIZE]){
             mcStep(lattice, iT);
 
             // Take every 1000th configuration
-            if(ii%1000 == 0){
-                ene = calculateEnergy(lattice);
+            if(ii%factor == 0){
                 mag = calculateMagnetisation(lattice);
-
-                E1 += ene;
-                E2 += ene*ene;
-                M1 += abs(mag/(LATTICE_SIZE*LATTICE_SIZE));
-                M2 += mag*mag/(LATTICE_SIZE*LATTICE_SIZE);
-                M4 += mag*mag*mag*mag/(LATTICE_SIZE*LATTICE_SIZE);
+                ene = calculateEnergy(lattice);
+                sp = sumSpins(lattice);
+                meanMagnetisation += abs(mag);
+                meanEnergy += ene;
+                power2Energy += ene*ene;
+                power2Magnetisation += mag*mag;
+                power2Spins += sp*sp;
+                power4Spins += sp*sp*sp*sp;
             }
         }
 
-        E[point] = n1 * E1;
-        M[point] = M1/(MONTE_CARLO_STEPS/1000);
-        C[point] = (n1*E2 - n2*E1*E1)*iT2;
-        X[point] = (M2/(MONTE_CARLO_STEPS/1000) - M1*M1/(MONTE_CARLO_STEPS/1000)*(MONTE_CARLO_STEPS/1000))*iT;
-        U[point] = 1 - n4*M4/(3*M2*M2*n4*n4);
-        std::cout<<"Temp point: "<<point<<std::endl;
+
+        meanMagnetisation = meanMagnetisation/(MONTE_CARLO_STEPS/factor);
+        std::cout<<"Mean magnetisation for temp: "<<T[point]<<" = "<<meanMagnetisation<<std::endl;
+
+        meanEnergy = meanEnergy/(MONTE_CARLO_STEPS/factor);
+        std::cout<<"Mean energy for temp: "<<T[point]<<" = "<<meanEnergy<<std::endl;
+
+        // Average
+        power2Energy = power2Energy/(MONTE_CARLO_STEPS/factor);
+        power2Magnetisation = power2Magnetisation/(MONTE_CARLO_STEPS/factor);
+        power2Spins = power2Spins/(MONTE_CARLO_STEPS/factor);
+        power4Spins = power4Spins/(MONTE_CARLO_STEPS/factor);
+
+        susceptibility = calculateSusceptibility(power2Magnetisation, meanMagnetisation, iT);
+        std::cout<<"Mean susceptibility for temp: "<<T[point]<<" = "<<susceptibility<<std::endl;
+
+        specificHeat = calculateSpecificHeat(power2Energy, meanEnergy, 1/iT);
+        std::cout<<"Mean specific heat for temp: "<<T[point]<<" = "<<specificHeat<<std::endl;
+
+        bindersCumulant = calculateBindersCumulant(power4Spins, power2Spins);
+        std::cout<<"Binder's Cummulant for temp: "<<T[point]<<" = "<<bindersCumulant<<std::endl<<std::endl;
+
+        E[point] = meanEnergy;
+        M[point] = meanMagnetisation;
+        X[point] = susceptibility;
+        C[point] = specificHeat;
+        U[point] = bindersCumulant;
     }
+
+    std::cout << std::endl<<std::endl<<std::endl<<float( clock () - begin_time ) /  CLOCKS_PER_SEC;
 
     writeToFile();
 }
 
 int main(){
 
-    srand(time(NULL));
+    srand(time(nullptr));
+    double r = ((double) rand() / (RAND_MAX));
 
-    std::mt19937 generator (123);
-    std::uniform_real_distribution<double> dis(0.0, 1.0);
-    std::uniform_real_distribution<double> indexed(0.0,LATTICE_SIZE);
     // Fill the lattice
     double lattice[LATTICE_SIZE][LATTICE_SIZE];
     for(int i=0; i<LATTICE_SIZE; i++) {
         for (int ii = 0; ii < LATTICE_SIZE; ii++) {
-            lattice[i][ii] = round(dis(generator));
+            lattice[i][ii] = round(r);
             if (lattice[i][ii] == 0) lattice[i][ii] = -1;
         }
-    }
-
-    double T_star = 1/5;
-
-    for(int i=0; i<1050; i++) {
-        mcStep(lattice, T_star);
-
-        if(i==1 || i==4 || i==32 || i==128 || i==1024) printLatticeForBehaviourPlot(lattice);
     }
 
     countSpins(lattice);
 
     testModel(lattice);
 
+    for(int i=0; i<OMITTED_STEPS; i++) mcStep(lattice, 1/5);
+
+    printLatticeForBehaviourPlot(lattice);
 }
