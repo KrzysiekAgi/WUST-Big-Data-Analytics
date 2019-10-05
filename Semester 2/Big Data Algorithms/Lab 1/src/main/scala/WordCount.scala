@@ -10,13 +10,13 @@ object WordCount {
       .setAppName("WordCount")
     val sc: SparkContext = new SparkContext(conf)
 
-    val textFile = sc.textFile("Bible.txt");
+    val textFile = sc.textFile("Moby.txt")
     val stopWordsRaw = sc.textFile("stop.txt")
     val stopWords = stopWordsRaw.collect.toSet
     val counts = textFile
       .flatMap(line => line.split(" "))
       .map(word => word.toLowerCase)
-      .map(word => word.replaceAll(",|'|\\.|:|;", ""))
+      .map(word => word.replaceAll("[,'.:;]", ""))
       .filter(word => !stopWords.contains(word) && !word.isEmpty)
       .map(word => (word, 1))
       .reduceByKey(_ + _)
@@ -29,6 +29,6 @@ object WordCount {
     val countsRemoved = counts
       .filter(word => !numbers.contains(word))
       .filter(word => word._1 != 1)
-    countsRemoved.saveAsTextFile("counts")
+    countsRemoved.saveAsTextFile("countsMoby")
   }
 }
