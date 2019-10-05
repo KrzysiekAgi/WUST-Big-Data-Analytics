@@ -24,6 +24,7 @@
            end if
         enddo
         write( 1, * ) x
+        !x jest tutaj sum krok¢w danego marynarza
         xNa=xNa+x
         xN2a=xN2a+x*x
       enddo

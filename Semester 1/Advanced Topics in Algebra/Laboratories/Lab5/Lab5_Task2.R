@@ -26,7 +26,8 @@ cov(beavers)
 ev <- eigen(covarianceMatrix)
 eigenValue <- ev$values
 eigenVectors <- ev$vectors
-
+eigenValue
+eigenVectors
 
 # Check with prcomp()
 prcomp(cov(beavers))

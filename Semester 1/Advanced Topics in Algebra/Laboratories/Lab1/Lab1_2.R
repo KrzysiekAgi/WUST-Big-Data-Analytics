@@ -10,6 +10,8 @@ r$u
 r$v
 
 D<-diag(r$d)
+D
 C<-r$u%*%diag(r$d)%*%t(r$v)
+C
 # B==C
 # SVD: B=U*D*V^T

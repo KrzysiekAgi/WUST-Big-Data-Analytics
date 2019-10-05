@@ -19,7 +19,7 @@ plot <- ggplot(df, aes(x=log_Ns, y=log_sig)) +
   labs(x = "log of number of steps",
        y = "log of sigmas") +
   ggtitle("Drunkard Problem") +
-  geom_smooth(method = "lm", color = "red") + 
+  geom_smooth(method = "lm", color = "red") +
   theme_bw()
 
 round(model, digits = 3)
