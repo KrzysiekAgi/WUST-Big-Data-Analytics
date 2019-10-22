@@ -1,4 +1,3 @@
-import scala.collection.MapView
 
 object Lab1 {
 
@@ -12,6 +11,7 @@ object Lab1 {
     println(generatePermutations(List(1,2,3,4,5)))
     println(countOccurrences("aaabbcccaa"))
     powerList(List(1,2)) foreach println
+    println(reverseCountConsecutiveOccurrences(List(("a",3),("b",2),("c",3),("a",2))))
   }
 
   def factorial(n: Int): Int = {
@@ -61,23 +61,31 @@ object Lab1 {
     loop(list, Nil)
   }
 
-  //TODO
   def listOfDuplicates[A](list: List[A]): List[List[A]] = {
     @scala.annotation.tailrec
     def loop(rest: List[A], listOfDuplicates: List[List[A]]): List[List[A]] = {
       rest match {
         case Nil => listOfDuplicates
+        case _::Nil => listOfDuplicates
         case h::t => if (h == t.head) loop(t, listOfDuplicates.appended(List(h, t.head))) else loop(t, listOfDuplicates)
       }
     }
     loop(list, Nil)
   }
 
+  def occurrences(text:String): List[(String, Int)] = {
+    def loop(rest: List[String], acc: List[(String, Int)]): List[(String, Int)] = rest match {
+      case Nil => acc
+      case h::t => ???
+      }
+    loop(text.split("").toList, Nil)
+  }
+
   def countOccurrences(text: String): Map[Char, Int] = {
     text.toCharArray.foldLeft[Map[Char, Int]](Map.empty)((m, c) => m + (c -> (m.getOrElse(c, 0) + 1)))
   }
 
-  def reverseCountConsecutiveOccurrences(list: List[(String, Int)]): String = ???
+  def reverseCountConsecutiveOccurrences(data: List[(String, Int)]): String = ???
 
   def generateSubSets[A](list: List[A]): List[Set[A]] = {
     list.toSet.subsets.toList
@@ -104,5 +112,4 @@ object Lab1 {
         }
     }
   }
-
 }
