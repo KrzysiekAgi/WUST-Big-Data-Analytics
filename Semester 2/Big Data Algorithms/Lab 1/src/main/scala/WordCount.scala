@@ -1,22 +1,23 @@
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.{SQLContext, SparkSession}
 
 object WordCount {
 
-  val conf: SparkConf = new SparkConf()
-    .setMaster("local[*]")
-    .setAppName("WordCount")
-  val sc: SparkContext = new SparkContext(conf)
-  System.setProperty("hadoop.home.dir", "")
+  val spark: SparkSession = SparkSession.builder()
+    .master("local[*]")
+    .appName("Big Data Algorithms")
+    .getOrCreate()
+  val sc: SparkContext = spark.sparkContext
+  val sqlContext: SQLContext = spark.sqlContext
 
   def main(args: Array[String]): Unit = {
 
     task1(3)
-    //task2()
 
   }
 
   def task1(aFew : Int) : Unit = {
-    val textFile = sc.textFile("Bible.txt")
+    val textFile = sc.textFile("books/Book5.txt")
     val stopWordsRaw = sc.textFile("stop.txt")
     val stopWords = stopWordsRaw.collect.toSet
     val counts = textFile
@@ -26,22 +27,17 @@ object WordCount {
       .filter(word => !stopWords.contains(word) && !word.isEmpty)
       .map(word => (word, 1))
       .reduceByKey(_ + _)
-      .filter(word => word._2 > 100)
+      .filter(word => word._2 > 10)
       .map(item => item.swap)
       .sortByKey(ascending = false, 1)
 
     //Task said - remove a few dozen of words...
     val numbers = counts.take(aFew * 12)
-    numbers.foreach(pair => println(pair))
+    //numbers.foreach(pair => println(pair))
     val countsRemoved = counts
       .filter(word => !numbers.contains(word))
       .filter(word => word._1 != 1)
-    countsRemoved.saveAsTextFile("countsBibleBigger20")
-    //countsRemoved.collect()
-    //countsRemoved.foreach(word => println(word))
-  }
-
-  def task2() : Unit = {
-
+    counts foreach println
+    counts.saveAsTextFile("Book5")
   }
 }
