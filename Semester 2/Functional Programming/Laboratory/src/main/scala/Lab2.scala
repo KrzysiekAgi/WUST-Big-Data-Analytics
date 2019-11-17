@@ -12,7 +12,8 @@ object Lab2 {
     val amountOfPrimes = testList.foldLeft(0)((acc, n) => if (isPrime(n)) acc+1 else acc+0)
     println(amountOfPrimes)
 
-    println(approx(15))
+    println(approx(5))
+    println(app(5))
 
   }
 
@@ -21,7 +22,9 @@ object Lab2 {
 
   def isPrime(n: Int): Boolean = ! ((2 until n-1) exists (n % _ == 0))
 
-  def approx(n: Int): Double = {
-    (0 to n).map(i => 1.0/Lab1.factorial(i)).sum
-  }
+  def approx(n: Int): Double = (0 to n).map(i => 1.0/Lab1.factorial(i)).sum
+
+  // same as approx but in O(n) time. IDEA reports errors, but compiles and returns same result. Probably highlighting error
+  def app(n: Int): Double = (1 to n).foldLeft((1.0, 1.0))((acc, curr) => (acc._1*curr, acc._2+(1/(acc._1*curr))))._2
+
 }
