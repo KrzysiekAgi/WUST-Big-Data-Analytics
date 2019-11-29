@@ -24,7 +24,7 @@ object Lab2 {
 
   def approx(n: Int): Double = (0 to n).map(i => 1.0/Lab1.factorial(i)).sum
 
-  // same as approx but in O(n) time. IDEA reports errors, but compiles and returns same result. Probably highlighting error
+  // same as approx but in O(n) time. IDEA reports errors, but compiles and returns same result. Probably just highlighting error
   def app(n: Int): Double = (1 to n).foldLeft((1.0, 1.0))((acc, curr) => (acc._1*curr, acc._2+(1/(acc._1*curr))))._2
 
 }
