@@ -21,8 +21,7 @@ object MapReduce {
 
     import org.apache.spark.sql.functions._
     val distinct: DataFrame = df.distinct().cache()
-    df.select(max($"Ints"), min($"Ints"), avg($"Ints"), countDistinct($"Ints")).show()
-    distinct.show()
+    df.select(max($"Ints"), min($"Ints"), avg($"Ints"), countDistinct($"Ints")).crossJoin(distinct).show()
 
     val stopWordsRaw = sc.textFile("stop.txt")
     val stopWords = stopWordsRaw.collect.toSet
