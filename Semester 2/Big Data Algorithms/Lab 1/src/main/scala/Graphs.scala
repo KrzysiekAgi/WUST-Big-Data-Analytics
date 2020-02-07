@@ -14,8 +14,8 @@ object Graphs {
 
   def main(args: Array[String]): Unit = {
     //reverseGraph()
-    //inOutDegrees()
-    clusteringCoeff()
+    inOutDegrees()
+    //clusteringCoeff()
   }
 
   def reverseGraph(): Unit = {
@@ -46,9 +46,10 @@ object Graphs {
     val out = stanfordGraph.outDegrees.toDF("VertexOut","Out Degree").cache()
     in.join(out, $"Vertex"===$"VertexOut").drop($"VertexOut").show(20)
 
+    val amountOfDegrees = stanfordGraph.vertices.count()
     import org.apache.spark.sql.functions._
-    in.select(avg($"In Degree")).show(20)
-    out.select(avg($"Out Degree")).show(20)
+    in.select(sum($"In Degree")/amountOfDegrees).show(20)
+    out.select(sum($"Out Degree")/amountOfDegrees).show(20)
   }
 
   def clusteringCoeff(): Unit = {
