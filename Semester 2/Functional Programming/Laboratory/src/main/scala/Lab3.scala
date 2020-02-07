@@ -1,3 +1,5 @@
+import cats._
+
 case class MultiChildrenTree[+A](value: A, children: List[MultiChildrenTree[A]]) {
   def this(value: A) = this(value, List())
   def nodeCount: Int = children.foldLeft(1)(_ + _.nodeCount)
@@ -34,10 +36,13 @@ abstract sealed class Tree[+A]() {
   def fold[B](n: B)(op: (B, A) => B): B =  {
     def loop(t: Tree[A], a: B): B =
       if (t.isEmpty) a
-      else loop(t.right, op(loop(t.left, a), t.value))
+      else loop(t.left, op(loop(t.right, a), t.value))
 
     loop(this, n)
   }
+
+  override def toString: String = if (isEmpty) "."
+  else "Branch(" + left + " " + value + " " + right + ")"
 
   def fail(m: String) = throw new NoSuchElementException(m)
 }
@@ -82,7 +87,7 @@ object Lab3 {
   def main(args: Array[String]): Unit = {
     val arr = Array(1,2,3,4,5,6,7,8,9)
     val tree = Tree.fromSortedArray(arr)
-    println(tree)
+    println(tree.toString)
     println(tree.contains(3))
     println(tree.contains(0))
     println(tree.height())
@@ -91,10 +96,20 @@ object Lab3 {
     
     val mt = MultiChildrenTree('a', List(MultiChildrenTree('f', List(MultiChildrenTree('g'))),
       MultiChildrenTree('c'), MultiChildrenTree('b', List(MultiChildrenTree('d'), MultiChildrenTree('e')))))
-    println(mt)
+    //println(mt)
     println(mt.nodeCount)
     println(mt.height)
     println(mt.contains('c'))
     println(mt.contains('z'))
+
+    val functorForTree: Functor[MultiChildrenTree] = new Functor[MultiChildrenTree]{
+      override def map[A, B](fa: MultiChildrenTree[A])(f: A => B): MultiChildrenTree[B] = ???
+    }
+
+    val foldableForTree: Foldable[MultiChildrenTree] = new Foldable[MultiChildrenTree] {
+      override def foldLeft[A, B](fa: MultiChildrenTree[A], b: B)(f: (B, A) => B): B = ???
+
+      override def foldRight[A, B](fa: MultiChildrenTree[A], lb: Eval[B])(f: (A, Eval[B]) => Eval[B]): Eval[B] = ???
+    }
   }
 }
