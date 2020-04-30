@@ -1,21 +1,13 @@
 package cms
 import scala.collection.mutable.ArrayBuffer
 
-class ReweightedSingleLineCMS(val k: Int) extends SingleLineCMS {
+class NaiveSingleLineCMS(val k: Int) extends SingleLineCMS {
 
   var sketch: ArrayBuffer[Float] = ArrayBuffer.fill(k)(1.0f)
 
-  def getSketch: ArrayBuffer[Float] = sketch
+  override def getSketch: ArrayBuffer[Float] = sketch
 
-  def addElement(element: Float): this.type = {
-    val distinctValues = sketch.distinct
-    if (!distinctValues.contains(element) && element < sketch(k - 1)) {
-      sketch.prepend(element)
-      sketch.remove(k)
-      sketch = sketch.sortWith(_ < _)
-    }
-    this
-  }
+  override def addElement(element: Float): NaiveSingleLineCMS.this.type = ???
 
   override def intersection(secondSketch: SingleLineCMS, tauMin: Float): Set[Float] = ???
 
