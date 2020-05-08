@@ -15,4 +15,8 @@ trait SingleLineCMS {
   def intersectionEstimation(secondSketch: SingleLineCMS, tauMin: Float = 0.5f): Float
 
   def unionEstimation(secondSketch: SingleLineCMS, tauMin: Float = 0.5f): Float
+
+  def difference(secondSketch: SingleLineCMS, tauMin: Float): Set[Float]
+
+  def differenceEstimation(secondSketch: SingleLineCMS, tauMin: Float): Float
 }

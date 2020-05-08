@@ -16,4 +16,8 @@ class NaiveSingleLineCMS(val k: Int) extends SingleLineCMS {
   override def intersectionEstimation(secondSketch: SingleLineCMS, tauMin: Float): Float = ???
 
   override def unionEstimation(secondSketch: SingleLineCMS, tauMin: Float): Float = ???
+
+  override def difference(secondSketch: SingleLineCMS, tauMin: Float): Set[Float] = ???
+
+  override def differenceEstimation(secondSketch: SingleLineCMS, tauMin: Float): Float = ???
 }
