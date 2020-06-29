@@ -7,16 +7,27 @@ class ImprovedSingeLineCMS(val k: Int) extends SingleLineCMS {
   override def getSketch: ArrayBuffer[Float] = sketch
 
   var sketch: ArrayBuffer[Float] = ArrayBuffer.fill(k)(1.0f)
-  var seen: Long = 0
   def addElement(element: Float): this.type = {
-    seen += 1
-    val distinctValues = sketch.distinct
-    if (!distinctValues.contains(element) && element < sketch(k - 1)) {
+    if (!sketch.contains(element) && element < sketch(k - 1)) {
       sketch.prepend(element)
       sketch.remove(k)
-      sketch = sketch.sortWith(_ < _)
+      sketch = swapSort(sketch)
     }
     this
+  }
+
+  def swapSort(sketch: ArrayBuffer[Float]): ArrayBuffer[Float] = {
+    var temp: Float = 0f
+    for (i <- 0 until sketch.size - 1) {
+      if (sketch(i) > sketch(i+1)) {
+        temp = sketch(i+1)
+        sketch(i+1) = sketch(i)
+        sketch(i) = temp
+      }
+      else
+        sketch
+    }
+    sketch
   }
 
   override def intersection(secondSketch: SingleLineCMS, tauMin: Float): Set[Float] = sketch.toSet.intersect(secondSketch.getSketch.toSet)
@@ -35,7 +46,20 @@ class ImprovedSingeLineCMS(val k: Int) extends SingleLineCMS {
 
   override def unionEstimation(secondSketch: SingleLineCMS, tauMin: Float): Float = (union(secondSketch, tauMin).size - 1) / tauMin
 
-  override def difference(secondSketch: SingleLineCMS, tauMin: Float): Set[Float] = ???
+  override def difference(secondSketch: SingleLineCMS, tauMin: Float): Set[Float] = {
+    sketch.toSet.diff(secondSketch.getSketch.toSet)
+  }
+
+  def diffEst(secondSketch: SingleLineCMS, tauMin: Float): Float = {
+    val diffEst = difference(secondSketch, tauMin)
+    if (diffEst.contains(tauMin)) (diffEst.size - 1)/tauMin
+    else diffEst.size/tauMin
+  }
+
+  def diffEstSimple(secondSketch: SingleLineCMS, tauMin: Float): Float = {
+    val diffEst = difference(secondSketch, tauMin)
+    (diffEst.size - 1)/tauMin
+  }
 
   override def differenceEstimation(secondSketch: SingleLineCMS, tauMin: Float): Float = {
     Math.abs((sketch.size - 1)/tauMin - intersectionEstimation(secondSketch, tauMin))

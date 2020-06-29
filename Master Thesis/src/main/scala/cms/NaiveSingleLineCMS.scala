@@ -7,7 +7,14 @@ class NaiveSingleLineCMS(val k: Int) extends SingleLineCMS {
 
   override def getSketch: ArrayBuffer[Float] = sketch
 
-  override def addElement(element: Float): NaiveSingleLineCMS.this.type = ???
+  override def addElement(element: Float): this.type = {
+    if (!sketch.distinct.contains(element) && element < sketch(k - 1)) {
+      sketch.prepend(element)
+      sketch.remove(k)
+      sketch = sketch.sortWith(_ < _)
+    }
+    this
+  }
 
   override def intersection(secondSketch: SingleLineCMS, tauMin: Float): Set[Float] = ???
 
